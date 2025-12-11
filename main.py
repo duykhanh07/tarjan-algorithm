@@ -6,16 +6,16 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import time
 
 # --- CÁC BIẾN TOÀN CỤC ---
-root = None
-txt_input = None
-lbl_stats = None
-entry_vertices = None
-ax = None
-canvas = None
-txt_log = None      # Nhật ký DFS
-tree_table = None   # Bảng Disc/Low
-txt_bridges_list = None # List danh sách cầu (Mới)
-txt_verify = None       # Kết quả kiểm chứng BFS (Mới)
+root = None # Cửa sổ chính
+txt_input = None # Nhập liệu đồ thị
+lbl_stats = None # Thống kê đồ thị
+entry_vertices = None # Nhập số đỉnh lẻ (không có cạnh)
+ax = None # Trục vẽ matplotlib 
+canvas = None # Canvas matplotlib
+txt_log = None      # Hiển thị các bước DFS
+tree_table = None   # Bảng Disc/Low/Parent
+txt_bridges_list = None # Danh sách cầu tìm được
+txt_verify = None       # Kiểm chứng cầu với BFS
 
 # Biến để kiểm soát Animation
 ANIMATION_SPEED = 0.8 # Giây
@@ -41,17 +41,16 @@ def update_canvas_step(G, pos, node_colors, edge_colors, labels_map, title):
 
 # --- THUẬT TOÁN TARJAN + VISUALIZATION ---
 def run_tarjan_visual(G, pos):
-    disc = {}
-    low = {}
-    time_counter = 0
-    bridges = []
-    parent = {node: None for node in G.nodes()}
-    visited = set()
-    logs = []
+    disc = {} # Thời gian phát hiện
+    low = {} # Giá trị low
+    time_counter = 0 # Bộ đếm thời gian toàn cục
+    bridges = [] # Danh sách cầu tìm được
+    parent = {node: None for node in G.nodes()} # Cha của mỗi đỉnh
+    visited = set() # Tập đỉnh đã thăm
+    logs = [] # Log các bước thực hiện
     final_data = [] # Dữ liệu bảng
 
     # Màu sắc mặc định
-    # --- ĐÃ SỬA LỖI TẠI DÒNG NÀY (Bỏ dấu # trước skyblue) ---
     node_colors = ['skyblue'] * len(G.nodes()) 
     edge_colors = ['black'] * len(G.edges())
     node_list = list(G.nodes())
@@ -70,7 +69,7 @@ def run_tarjan_visual(G, pos):
         return l_map
 
     def dfs(u):
-        nonlocal time_counter
+        nonlocal time_counter 
         visited.add(u)
         disc[u] = low[u] = time_counter
         time_counter += 1
