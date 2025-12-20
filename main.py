@@ -136,6 +136,10 @@ def verify_bridges_with_bfs(G, bridges):
     initial_components = nx.number_connected_components(G)
     report.append(f"Số TPLT ban đầu: {initial_components}\n")
     
+    if not bridges:
+        report.append("-> Danh sách cầu rỗng. Không cần kiểm chứng.")
+        return report
+
     for u, v in bridges:
         # Tạo bản sao graph để xóa thử
         G_temp = G.copy()
