@@ -190,8 +190,21 @@ def start_processing():
     txt_verify.config(state=tk.NORMAL); txt_verify.delete("1.0", tk.END)
     for row in tree_table.get_children(): tree_table.delete(row)
 
+    # --- ĐO THỜI GIAN THUẬT TOÁN (ALGORITHM TIME) ---
+    # Chạy thử thuật toán tìm cầu thuần túy (không visual) để đo tốc độ tính toán
+    t_start_algo = time.perf_counter()
+    list(nx.bridges(G)) # Dùng hàm thư viện hoặc DFS thuần để đo tải CPU
+    t_end_algo = time.perf_counter()
+    algo_time_ms = (t_end_algo - t_start_algo) * 1000 # Đổi ra ms
+
+    # --- ĐO THỜI GIAN MÔ PHỎNG (ANIMATION TIME) ---
+    t_start_anim = time.perf_counter()
+    
     # 3. CHẠY TARJAN + VISUALIZATION
     bridges, logs, table_data = run_tarjan_visual(G, pos)
+    
+    t_end_anim = time.perf_counter()
+    anim_time_s = t_end_anim - t_start_anim # Tính bằng giây
 
     # 4. HIỂN THỊ KẾT QUẢ TARJAN
     # Log
@@ -208,8 +221,9 @@ def start_processing():
         txt_bridges_list.insert(tk.END, "Không có cầu nào.")
     txt_bridges_list.config(state=tk.DISABLED)
 
-    # Thống kê chung
-    lbl_stats.config(text=f"Đỉnh: {G.number_of_nodes()} | Cạnh: {G.number_of_edges()} | Cầu tìm thấy: {len(bridges)}")
+    # --- CẬP NHẬT NHÃN THỐNG KÊ KÈM THỜI GIAN ---
+    lbl_stats.config(text=f"Đỉnh: {G.number_of_nodes()} | Cạnh: {G.number_of_edges()} | Cầu tìm thấy: {len(bridges)}\n"
+                          f"T.Gian Thuật toán: {algo_time_ms:.4f} ms | T.Gian Animation: {anim_time_s:.2f} s")
 
     # 5. CHẠY KIỂM CHỨNG (VERIFICATION)
     verify_report = verify_bridges_with_bfs(G, bridges)
@@ -241,6 +255,14 @@ def clear_all():
     for item in tree_table.get_children(): tree_table.delete(item)
     ax.clear(); ax.axis('off'); canvas.draw()
 
+# --- HÀM TẠO DỮ LIỆU TEST (ĐẶT Ở NGOÀI MAIN) ---
+def generate_test_data(num_nodes, num_edges):
+    G_rand = nx.gnm_random_graph(num_nodes, num_edges, seed=42)
+    edges_str = ""
+    for u, v in G_rand.edges():
+        edges_str += f"{u} {v}\n"
+    return edges_str.strip()
+
 # --- MAIN GUI ---
 def main():
     global root, txt_input, lbl_stats, entry_vertices, ax, canvas 
@@ -254,12 +276,12 @@ def main():
     f_left = tk.Frame(root, width=200, bg="#f5f5f5", padx=5, pady=5)
     f_left.pack(side=tk.LEFT, fill=tk.Y)
     
-    tk.Label(f_left, text="Số đỉnh (Opt):", bg="#f5f5f5").pack(anchor="w")
+    tk.Label(f_left, text="Số đỉnh(Tùy chọn nếu có đỉnh cô lập):", bg="#f5f5f5").pack(anchor="w")
     entry_vertices = tk.Entry(f_left); entry_vertices.pack(fill=tk.X)
     
     tk.Label(f_left, text="Danh sách cạnh:", bg="#f5f5f5").pack(anchor="w", pady=(10,0))
     txt_input = tk.Text(f_left, height=10, width=25); txt_input.pack(fill=tk.X)
-    txt_input.insert(tk.END, "1 2\n1 3\n2 3\n3 4\n4 5\n4 6\n5 6")
+    txt_input.insert(tk.END,generate_test_data(20, 42)) # Dữ liệu test mẫu
     
     btn_run = tk.Button(f_left, text="CHẠY (VISUALIZE)", command=start_processing, bg="green", fg="white", font=("Arial", 10, "bold"))
     btn_run.pack(fill=tk.X, pady=10)
